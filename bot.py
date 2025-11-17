@@ -118,32 +118,33 @@ def send_sms_via_api(number, message, reply_to_chat_id=None):
         print(error_msg)
         return
 
-    # URL ارسال پیامک از SMSMobileAPI (فرمت ممکن است متفاوت باشد)
-    url = "https://api.smsmobileapi.com/sms/send"
+    # URL واقعی ارسال پیامک از SMSMobileAPI (بر اساس مستندات)
+    url = "https://api.smsmobileapi.com/sendsms/"
 
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-
-    data = {
-        "number": number,
+    # پارامترهای درخواست (به عنوان query parameters)
+    params = {
+        "apikey": api_key,
+        "recipients": number,
         "message": message
     }
 
     try:
-        response = requests.post(url, json=data, headers=headers)
+        # ارسال درخواست GET به API
+        response = requests.get(url, params=params)
         if response.status_code == 200:
+            # اگر پاسخ موفقیت‌آمیز بود
             success_msg = f"✅ پیامک با موفقیت ارسال شد: {message}"
             if reply_to_chat_id:
                 bot.send_message(reply_to_chat_id, success_msg)  # اصلاح شد
             print(success_msg)
         else:
+            # اگر پاسخ خطا بود
             error_msg = f"❌ خطا در ارسال پیامک: {response.status_code} - {response.text}"
             if reply_to_chat_id:
                 bot.send_message(reply_to_chat_id, error_msg)  # اصلاح شد
             print(error_msg)
     except Exception as e:
+        # اگر خطای اتصال رخ داد
         error_msg = f"❌ خطا در اتصال به API: {e}"
         if reply_to_chat_id:
             bot.send_message(reply_to_chat_id, error_msg)  # اصلاح شد
