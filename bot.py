@@ -114,7 +114,7 @@ def send_sms_via_api(number, message, reply_to_chat_id=None):
     if not api_key:
         error_msg = "❌ کلید API برای ارسال پیامک تنظیم نشده است."
         if reply_to_chat_id:
-            bot.reply_to(bot.get_chat(reply_to_chat_id), error_msg)
+            bot.send_message(reply_to_chat_id, error_msg)  # اصلاح شد
         print(error_msg)
         return
 
@@ -136,17 +136,17 @@ def send_sms_via_api(number, message, reply_to_chat_id=None):
         if response.status_code == 200:
             success_msg = f"✅ پیامک با موفقیت ارسال شد: {message}"
             if reply_to_chat_id:
-                bot.reply_to(bot.get_chat(reply_to_chat_id), success_msg)
+                bot.send_message(reply_to_chat_id, success_msg)  # اصلاح شد
             print(success_msg)
         else:
             error_msg = f"❌ خطا در ارسال پیامک: {response.status_code} - {response.text}"
             if reply_to_chat_id:
-                bot.reply_to(bot.get_chat(reply_to_chat_id), error_msg)
+                bot.send_message(reply_to_chat_id, error_msg)  # اصلاح شد
             print(error_msg)
     except Exception as e:
         error_msg = f"❌ خطا در اتصال به API: {e}"
         if reply_to_chat_id:
-            bot.reply_to(bot.get_chat(reply_to_chat_id), error_msg)
+            bot.send_message(reply_to_chat_id, error_msg)  # اصلاح شد
         print(error_msg)
 
 def send_sms_via_bot(chat_id, hall_name, payload_text):
