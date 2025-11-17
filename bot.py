@@ -7,11 +7,11 @@ import os
 from datetime import datetime
 
 # ------------------ پیکربندی اولیه ------------------
-BOT_TOKEN = "8590701317:AAEOAZ7ryTgiqGEcHA7VXLdXXm6ZH2KXmRo"  # توکن را از محیط بخوان
+BOT_TOKEN = os.environ.get("BOT_TOKEN")  # از محیط بخوان
 if not BOT_TOKEN:
-    raise ValueError("8590701317:AAEOAZ7ryTgiqGEcHA7VXLdXXm6ZH2KXmRo")
+    raise ValueError("BOT_TOKEN is not set in environment variables.")
 
-bot = telebot.TeleBot(8590701317:AAEOAZ7ryTgiqGEcHA7VXLdXXm6ZH2KXmRo)
+bot = telebot.TeleBot(BOT_TOKEN)
 
 # تنظیمات سالن‌ها و کاربران مجاز
 HALLS = {
@@ -424,9 +424,25 @@ def handle_all_messages(message):
         except:
             bot.reply_to(message, "❌ فرمت درست: 22 6")
 
+# ------------------ اضافه کردن یک سرور HTTP برای Render ------------------
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "ربات فعال است!"
+
 # ------------------ اجرای ربات ------------------
 if __name__ == "__main__":
     print("ربات شروع به کار کرد...")
     if AUTO_CHECK_ENABLED:
         schedule_periodic()
+
+    # اجرای سرور Flask در پس‌زمینه
+    from threading import Thread
+    thread = Thread(target=lambda: app.run(host='0.0.0.0', port=int(os.environ.get("PORT", 5000)), debug=False))
+    thread.daemon = True
+    thread.start()
+
+    # اجرای ربات تلگرام
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
