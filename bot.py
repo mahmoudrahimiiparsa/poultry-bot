@@ -110,7 +110,7 @@ def send_sms_via_bot(chat_id, hall_name, payload_text):
     number = HALLS.get(hall_name, {}).get("number")
     if number:
         # ارسال یک پیام کامل
-        full_message = f"/sendsms\n{number}\n{payload_text}"
+        full_message = f"/sendsms2\n{number}\n{payload_text}"
         bot.send_message(chat_id, full_message)
 
 # ------------------ خلاصه و اخطار ------------------
@@ -445,4 +445,5 @@ if __name__ == "__main__":
 
     # اجرای ربات تلگرام
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
+
 
