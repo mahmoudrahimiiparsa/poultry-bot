@@ -88,12 +88,11 @@ def periodic_check():
             for hall_name, hall_info in HALLS.items():
                 manager_id = hall_info["manager"]
                 number = hall_info["number"]
-                bot.send_message(manager_id, f"/sendsms")
-                bot.send_message(manager_id, f"{number}")
-                bot.send_message(manager_id, f"?IOS")
-                bot.send_message(manager_id, f"/sendsms")
-                bot.send_message(manager_id, f"{number}")
-                bot.send_message(manager_id, f"!!!")
+                # ارسال یک پیام کامل برای چک دوره‌ای
+                full_message = f"/sendsms\n{number}\n?IOS"
+                bot.send_message(manager_id, full_message)
+                full_message2 = f"/sendsms\n{number}\n!!!"
+                bot.send_message(manager_id, full_message2)
     schedule_periodic()
 
 def current_hall(chat_id):
@@ -110,9 +109,9 @@ def set_hall(chat_id, hall_name):
 def send_sms_via_bot(chat_id, hall_name, payload_text):
     number = HALLS.get(hall_name, {}).get("number")
     if number:
-        bot.send_message(chat_id, f"/sendsms")
-        bot.send_message(chat_id, f"{number}")
-        bot.send_message(chat_id, f"{payload_text}")
+        # ارسال یک پیام کامل
+        full_message = f"/sendsms\n{number}\n{payload_text}"
+        bot.send_message(chat_id, full_message)
 
 # ------------------ خلاصه و اخطار ------------------
 def summarize_report(text):
@@ -446,3 +445,4 @@ if __name__ == "__main__":
 
     # اجرای ربات تلگرام
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
+
