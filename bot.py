@@ -5,6 +5,7 @@ import re
 import json
 import os
 from datetime import datetime
+import requests  # اضافه شد
 
 # ------------------ پیکربندی اولیه ------------------
 BOT_TOKEN = os.environ.get("BOT_TOKEN")  # از محیط بخوان
@@ -88,11 +89,9 @@ def periodic_check():
             for hall_name, hall_info in HALLS.items():
                 manager_id = hall_info["manager"]
                 number = hall_info["number"]
-                # ارسال یک پیام کامل برای چک دوره‌ای
-                full_message = f"/sendsms\n{number}\n?IOS"
-                bot.send_message(manager_id, full_message)
-                full_message2 = f"/sendsms\n{number}\n!!!"
-                bot.send_message(manager_id, full_message2)
+                # ارسال پیامک مستقیم از طریق API
+                send_sms_via_api(number, "?IOS", manager_id)
+                send_sms_via_api(number, "!!!", manager_id)
     schedule_periodic()
 
 def current_hall(chat_id):
@@ -106,12 +105,55 @@ def set_hall(chat_id, hall_name):
     ctx["hall"] = hall_name
     user_context[chat_id] = ctx
 
+def send_sms_via_api(number, message, reply_to_chat_id=None):
+    """
+    ارسال پیامک از طریق API SMSMobileAPI
+    """
+    api_key = os.environ.get("SMSMOBILEAPI_KEY")  # گرفتن کلید از متغیر محیطی
+
+    if not api_key:
+        error_msg = "❌ کلید API برای ارسال پیامک تنظیم نشده است."
+        if reply_to_chat_id:
+            bot.reply_to(bot.get_chat(reply_to_chat_id), error_msg)
+        print(error_msg)
+        return
+
+    # URL ارسال پیامک از SMSMobileAPI (فرمت ممکن است متفاوت باشد)
+    url = "https://api.smsmobileapi.com/sms/send"
+
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
+
+    data = {
+        "number": number,
+        "message": message
+    }
+
+    try:
+        response = requests.post(url, json=data, headers=headers)
+        if response.status_code == 200:
+            success_msg = f"✅ پیامک با موفقیت ارسال شد: {message}"
+            if reply_to_chat_id:
+                bot.reply_to(bot.get_chat(reply_to_chat_id), success_msg)
+            print(success_msg)
+        else:
+            error_msg = f"❌ خطا در ارسال پیامک: {response.status_code} - {response.text}"
+            if reply_to_chat_id:
+                bot.reply_to(bot.get_chat(reply_to_chat_id), error_msg)
+            print(error_msg)
+    except Exception as e:
+        error_msg = f"❌ خطا در اتصال به API: {e}"
+        if reply_to_chat_id:
+            bot.reply_to(bot.get_chat(reply_to_chat_id), error_msg)
+        print(error_msg)
+
 def send_sms_via_bot(chat_id, hall_name, payload_text):
     number = HALLS.get(hall_name, {}).get("number")
     if number:
-        # ارسال یک پیام کامل
-        full_message = f"/sendsms2\n{number}\n{payload_text}"
-        bot.send_message(chat_id, full_message)
+        # ارسال پیامک مستقیم از طریق API
+        send_sms_via_api(number, payload_text, chat_id)
 
 # ------------------ خلاصه و اخطار ------------------
 def summarize_report(text):
@@ -445,5 +487,3 @@ if __name__ == "__main__":
 
     # اجرای ربات تلگرام
     bot.infinity_polling(timeout=10, long_polling_timeout=5)
-
-
